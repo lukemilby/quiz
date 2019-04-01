@@ -24,16 +24,22 @@ func (q *Quiz) AddProblem(problem Problem) []Problem {
 	return q.Problems
 }
 
+func startTimer(sec int) {
+	timer := time.NewTimer(time.Duration(sec) * time.Second)
+	<-timer.C
+	fmt.Println("Times up!")
+	os.Exit(0)
+}
+
 func main () {
 	q := Quiz{}
 	reader := bufio.NewReader(os.Stdin)
 	// flags
-	problemFile := flag.String("problemFile", "problems.csv", "A csv containing problems")
-	quizTime := flag.Duration("timer", 10 * time.Second, "Timer for quiz")
+	problemFile := flag.String("pf", "problems.csv", "A csv containing problems")
+	quizTime := flag.Int("t", 10 , "Timer duration for quiz")
 	// parse command line
 	flag.Parse()
-	quizTimer := time.NewTimer(*quizTime)
-
+	go startTimer(*quizTime)
 	// Open file
 	f, err := os.Open(*problemFile)
 	if err != nil {
