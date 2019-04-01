@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"flag"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 )
+
 type Problem struct {
 	Question string
 	Answer string
@@ -22,9 +26,13 @@ func (q *Quiz) AddProblem(problem Problem) []Problem {
 
 func main () {
 	q := Quiz{}
+	reader := bufio.NewReader(os.Stdin)
+	// flags
 	problemFile := flag.String("problemFile", "problems.csv", "A csv containing problems")
+	quizTime := flag.Duration("timer", 10 * time.Second, "Timer for quiz")
 	// parse command line
 	flag.Parse()
+	quizTimer := time.NewTimer(*quizTime)
 
 	// Open file
 	f, err := os.Open(*problemFile)
@@ -37,9 +45,20 @@ func main () {
 	if err != nil {
 		panic(err)
 	}
-	// loop through csv
+	// loop through csv and build quiz
 	for _, line := range lines {
 		q.AddProblem(Problem{line[0],line[1]})
 	}
-	fmt.Println(len(q.Problems))
+	// loop through questions and ask user to solve problems
+	for _, p := range q.Problems {
+		fmt.Printf("Question: What is %s?\n", p.Question)
+		text, _ := reader.ReadString('\n')
+		text = strings.Replace(text,"\n","", -1)
+		if strings.Compare(p.Answer, text) == 0 {
+			fmt.Println("You're right!")
+		} else {
+			fmt.Println("Wrong answer.")
+		}
+	}
+
 }
